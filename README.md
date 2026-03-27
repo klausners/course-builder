@@ -1,135 +1,197 @@
 # course-builder
 
-Research-driven course generator for Claude Code. Reads real articles. Writes real courses.
+> AI agents for Claude Code that research real articles, cross-reference facts, and synthesize structured study courses with narrative arcs -- not link roundups.
 
-## What this is
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-agent-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-A pair of Claude Code agents that build comprehensive study courses on any topic. Unlike AI course generators that just prompt an LLM, this agent:
+## The problem
 
-1. **Searches** for 8-40 real articles (configurable depth)
-2. **Reads them in full** via web fetch
-3. **Cross-references facts** across sources (quorum validation)
-4. **Synthesizes** into a coherent narrative arc from beginner to advanced
-5. **Produces actionable frameworks** in every lesson
-6. **Attributes every claim** to its source
+AI course generators prompt an LLM and call it a day. Deep research agents produce reports, not courses. No existing tool does both: **read real articles AND produce structured educational content.**
 
-The result is a self-contained `.md` course that can teach you the topic without clicking a single link.
+course-builder fills that gap.
+
+```
+You: "Build a course on product discovery for PMs"
+
+course-builder:
+  → searches 15-25 real articles
+  → reads each one in full
+  → cross-references facts across sources
+  → synthesizes into a 10-lesson course with narrative arc
+  → extracts actionable frameworks per lesson
+  → hunts for unexplored opportunities via innovation scout
+  → delivers a self-contained .md file you can learn from start to finish
+```
 
 ## How it's different
 
-| | course-builder | Typical AI course generators | Deep research agents |
+| | course-builder | AI course generators (Coursebox, CourseMagic, etc.) | Deep research agents (GPT Researcher, etc.) |
 |---|---|---|---|
-| Reads real articles | Yes (10-25) | No -- prompts LLM directly | Yes |
-| Structured course output | Yes -- modules, lessons, arc | Yes -- but shallow | No -- reports only |
-| Fact validation | Quorum (3+ sources) | None | Some |
+| Reads real articles | Yes (10-25+) | No -- prompts LLM directly | Yes |
+| Structured course output | Modules, lessons, narrative arc | Shallow outlines | Reports only |
+| Fact validation | Quorum: 3+ sources = high confidence | None | Some |
 | Actionable frameworks | Every lesson | Rarely | No |
-| Source attribution | Per lesson | Generic | Per report |
-| Innovation analysis | Yes (scout agent) | No | No |
-| Incremental mode | Yes -- add to existing courses | No | No |
+| Source attribution | Per lesson, with links | Generic or none | Per report |
+| Innovation analysis | Dedicated scout agent | No | No |
+| Incremental mode | Add modules to existing courses | No | No |
+| Research transparency | Full metadata (sources read, failures, quorum stats) | None | Partial |
 
 ## Installation
 
 ```bash
-# Clone to your home directory (or anywhere)
 git clone https://github.com/klausners/course-builder.git
-
-# Copy agents to your Claude Code config
 cp course-builder/.claude/agents/*.md ~/.claude/agents/
 ```
 
-That's it. The agents are now available in Claude Code.
+Done. Both agents (`course-builder` and `innovation-scout`) are now available in Claude Code.
 
-## Usage
+## Quick start
 
-In Claude Code, just ask:
+Open Claude Code and ask:
 
 ```
 Build a course on product discovery for PMs
 ```
+
+The agent will ask you up to 4 clarifying questions (audience, depth, scope, success criteria), then run the full pipeline autonomously.
+
+### More examples
 
 ```
 Create a deep course on Kubernetes networking for backend engineers
 ```
 
 ```
+Build a quick course on prompt engineering for designers
+```
+
+```
 Add a module on security to my existing APIs course at ~/Documents/course-apis.md
 ```
 
-The system will:
-1. Ask you clarifying questions (audience, depth, success criteria)
-2. Research the topic (web search + full article reads)
-3. Write the course with narrative arc and frameworks
-4. Run the innovation scout to find unexplored opportunities
-5. Save to `~/Documents/` and open in VS Code
-
-### Research depth levels
-
-| Level | Sources | Lessons | Best for |
-|-------|---------|---------|----------|
-| Quick | 8-12 | 6-8 | Narrow topics, time-sensitive |
-| Standard (default) | 15-25 | 8-12 | Most courses |
-| Deep | 25-40 | 12-18 | Reference-grade material |
-
-Deep mode includes **recursive sub-research**: after the initial pass, it identifies knowledge gaps per module and runs targeted searches to fill them.
-
 ## How it works
 
-### Two-agent team
+### Two-agent team workflow
 
 ```
 [course-builder]  →  [innovation-scout]  →  [Team lead: integrate + deliver]
 ```
 
-**course-builder** does the heavy lifting: research, synthesis, writing, framework extraction.
+1. **course-builder** does the heavy lifting: web search, full article reads, synthesis, writing, framework extraction
+2. **innovation-scout** receives the course context and hunts for what's MISSING: unexplored opportunities, gaps in current practice, cross-domain applications
+3. **Team lead** (Claude Code itself) orchestrates the workflow, integrates the innovation chapter, and delivers the final file
 
-**innovation-scout** receives the course context and hunts for what's MISSING: unexplored opportunities, gaps in current practice, cross-domain applications. Produces an extra chapter.
+### Research pipeline
 
-The team lead (Claude Code itself) orchestrates the workflow, integrates the innovation chapter, and delivers the final file.
+```
+Step 0   Read user context (voice profile, preferences)
+Step 0.5 Detect mode (standard or incremental)
+Step 1   Clarify scope (audience, depth, success criteria)
+Step 2   Web search: cast a wide net (8-40 sources depending on depth)
+Step 3   Read articles in full via web fetch (not just snippets)
+Step 3.5 Recursive sub-research per module (deep mode only)
+Step 4   Synthesize: map concepts, eliminate redundancy, build narrative arc
+Step 5   Write lessons (hook → content → frameworks → takeaways → sources)
+Step 6   Build framework kit table with confidence levels
+Step 7   Build complete source table with links
+Step 7.5 Generate research metadata
+Step 7.7 Integrate innovation chapter (if running as team)
+Step 8   Save .md, optional PDF export, deliver summary
+```
 
-### Fact validation
+### Research depth levels
 
-Every concept gets tracked across sources:
-- **3+ sources confirm it** → high confidence, stated as fact
-- **1-2 sources** → medium confidence, attributed ("According to [Author]...")
+| Level | Web searches | Sources | Articles read | Lessons | Best for |
+|-------|-------------|---------|---------------|---------|----------|
+| **Quick** | 3-4 | 8-12 | 6-8 | 6-8 | Narrow topics, time-sensitive needs |
+| **Standard** (default) | 4-6 | 15-25 | 10-15 | 8-12 | Most courses |
+| **Deep** | 6-10 | 25-40 | 15-25 | 12-18 | Reference-grade material |
+
+Deep mode triggers **recursive sub-research**: after the initial pass, the agent identifies knowledge gaps per module and runs targeted searches to fill them.
+
+### Fact validation (quorum system)
+
+Every concept is tracked across sources:
+
+- **3+ independent sources** → high confidence, stated as fact
+- **1-2 sources** → medium confidence, hedged attribution ("According to [Author]...")
 - The Framework Kit table shows confidence levels for each deliverable
+- Single-source claims are never presented as universal truth
 
-### Source diversity
+### Source diversity enforcement
 
-The agent enforces diversity in its research:
-- At least 3 different author perspectives
+The agent checks its research pool for:
+
+- At least 3 different author perspectives (not all from one person/company)
 - At least 1 contrarian or alternative viewpoint
-- At least 2 practical/implementation-focused sources
+- At least 2 practical/implementation-focused sources (not all theory)
 
-If gaps are detected, additional searches are triggered automatically.
+Missing any of these triggers additional targeted searches automatically.
 
-## Output
+## Output structure
 
 Every course includes:
 
-- **Modules and lessons** with narrative progression
-- **Framework Kit** -- table of all actionable frameworks with lesson references and confidence levels
-- **Complete source table** -- every article cited, per lesson, with links
-- **Research metadata** -- transparency on depth, sources read, quorum stats, failures
-- **Innovation chapter** -- unexplored opportunities from the scout agent
+| Section | Description |
+|---------|-------------|
+| **Modules and lessons** | Narrative progression from foundations to advanced |
+| **Framework Kit** | Table of all actionable frameworks with lesson references and confidence |
+| **Source table** | Every article cited, per lesson, with links |
+| **Research metadata** | Depth used, searches performed, articles read, quorum stats, failures |
+| **Innovation chapter** | Unexplored opportunities from the scout agent |
 
-Optional: **PDF export** via pandoc (the agent will run it if pandoc is installed).
+Optional: **PDF export** via pandoc (runs automatically if installed).
 
 ## Customization
 
-The agents are plain `.md` files. You can:
+The agents are plain `.md` files -- no build step, no dependencies. Edit them directly:
 
-- Change the lesson structure template (Step 5)
-- Adjust research depth parameters (Step 2)
-- Modify the quality criteria checklist
-- Change the default save location
-- Add your own voice profile path in Step 0
+| What to change | Where |
+|----------------|-------|
+| Lesson structure template | Step 5 in `course-builder.md` |
+| Research depth parameters | Step 2 in `course-builder.md` |
+| Quality criteria checklist | End of `course-builder.md` |
+| Default save location | Step 8 in `course-builder.md` |
+| Voice profile path | Step 0 in `course-builder.md` |
+| Innovation chapter format | Step 4 in `innovation-scout.md` |
+
+## Limitations
+
+- **Depends on web access.** The agent needs to fetch real articles. Sites behind paywalls, login walls, or aggressive bot protection (403s) will be skipped. The agent retries with alternative sources, but some niche topics may have limited freely accessible content.
+- **Quality scales with source quality.** If the available articles on a topic are shallow, the course will reflect that. Deep mode with recursive research mitigates this but can't create depth that doesn't exist online.
+- **Long generation time.** A standard course takes 5-15 minutes. Deep courses can take 20-30+ minutes. This is the cost of actually reading articles instead of prompting an LLM.
+- **No multimedia.** Outputs Markdown (and optionally PDF). Does not generate slides, videos, quizzes, or interactive content.
+- **Claude Code only.** These agents run inside Claude Code. They are not standalone CLI tools or web apps.
+- **Token usage.** Reading 10-25 full articles and writing a complete course consumes significant tokens. Deep mode especially.
+- **No persistent memory across courses.** Each course build is independent. The agent doesn't learn from previously built courses (though incremental mode can extend existing ones).
 
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
 - A Claude API key with access to Sonnet or Opus
-- Optional: `pandoc` + `wkhtmltopdf` for PDF export (`brew install pandoc wkhtmltopdf` on macOS)
+- Optional: `pandoc` + `wkhtmltopdf` for PDF export
+
+```bash
+# macOS
+brew install pandoc wkhtmltopdf
+
+# Ubuntu/Debian
+sudo apt install pandoc wkhtmltopdf
+```
+
+## Contributing
+
+Contributions welcome. The agents are plain Markdown files, so the bar to contribute is low:
+
+1. Fork the repo
+2. Edit the agent `.md` files
+3. Test by copying to `~/.claude/agents/` and running a course build
+4. Open a PR describing what you changed and why
+
+Ideas for contributions: new output formats, additional quality checks, support for other research sources (e.g., academic papers via Semantic Scholar), localization of lesson templates.
 
 ## License
 
-MIT
+[MIT](LICENSE)

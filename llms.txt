@@ -1,0 +1,28 @@
+# course-builder
+
+> AI agents for Claude Code that research real articles, cross-reference facts across multiple sources, and synthesize structured study courses with narrative arcs, actionable frameworks, and full source attribution.
+
+course-builder is a two-agent system (course-builder + innovation-scout) that runs inside Claude Code. Unlike AI course generators that prompt an LLM directly, it reads 10-25+ real articles via web fetch, validates facts by quorum (3+ sources = high confidence), and produces self-contained Markdown courses with beginner-to-advanced progression.
+
+## Key capabilities
+
+- Research-driven: reads real articles, not just LLM knowledge
+- Fact validation by quorum (cross-referencing 3+ independent sources)
+- Three depth levels: Quick (8-12 sources), Standard (15-25), Deep (25-40 with recursive sub-research)
+- Narrative arc from foundations to advanced
+- Actionable frameworks in every lesson
+- Per-lesson source attribution with links
+- Innovation scout agent that finds unexplored opportunities
+- Incremental mode to add modules to existing courses
+- PDF export via pandoc
+- Research transparency metadata (sources read, failures, quorum stats)
+
+## Installation
+
+Copy `.claude/agents/course-builder.md` and `.claude/agents/innovation-scout.md` to `~/.claude/agents/`.
+
+## Documentation
+
+- [README](https://github.com/klausners/course-builder/blob/main/README.md)
+- [course-builder agent](https://github.com/klausners/course-builder/blob/main/.claude/agents/course-builder.md)
+- [innovation-scout agent](https://github.com/klausners/course-builder/blob/main/.claude/agents/innovation-scout.md)
