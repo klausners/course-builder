@@ -1,6 +1,6 @@
 # course-builder
 
-> AI agents for Claude Code that research real articles, cross-reference facts, and synthesize structured study courses with narrative arcs -- not link roundups.
+> AI agents for Claude Code that research real articles and YouTube videos, cross-reference facts, and synthesize structured study courses with narrative arcs -- not link roundups.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-agent-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
@@ -16,8 +16,8 @@ course-builder fills that gap.
 You: "Build a course on product discovery for PMs"
 
 course-builder:
-  → searches 15-25 real articles
-  → reads each one in full
+  → searches 15-25 real articles and YouTube videos
+  → reads articles and extracts video transcripts
   → cross-references facts across sources
   → synthesizes into a 10-lesson course with narrative arc
   → extracts actionable frameworks per lesson
@@ -29,7 +29,7 @@ course-builder:
 
 | | course-builder | AI course generators (Coursebox, CourseMagic, etc.) | Deep research agents (GPT Researcher, etc.) |
 |---|---|---|---|
-| Reads real articles | Yes (10-25+) | No -- prompts LLM directly | Yes |
+| Reads real articles + YouTube transcripts | Yes (10-25+) | No -- prompts LLM directly | Yes |
 | Structured course output | Modules, lessons, narrative arc | Shallow outlines | Reports only |
 | Fact validation | Quorum: 3+ sources = high confidence | None | Some |
 | Actionable frameworks | Every lesson | Rarely | No |
@@ -43,6 +43,9 @@ course-builder:
 ```bash
 git clone https://github.com/klausners/course-builder.git
 cp course-builder/.claude/agents/*.md ~/.claude/agents/
+
+# Optional: pre-install YouTube transcript support (auto-installed on first use if skipped)
+pip3 install -r course-builder/requirements.txt
 ```
 
 Done. Both agents (`course-builder` and `innovation-scout`) are now available in Claude Code.
@@ -89,8 +92,8 @@ Add a module on security to my existing APIs course at ~/Documents/course-apis.m
 Step 0   Read user context (voice profile, preferences)
 Step 0.5 Detect mode (standard or incremental)
 Step 1   Clarify scope (audience, depth, success criteria)
-Step 2   Web search: cast a wide net (8-40 sources depending on depth)
-Step 3   Read articles in full via web fetch (not just snippets)
+Step 2   Web + YouTube search: cast a wide net (8-40 sources depending on depth)
+Step 3   Read articles + extract YouTube transcripts (not just snippets)
 Step 3.5 Recursive sub-research per module (deep mode only)
 Step 4   Synthesize: map concepts, eliminate redundancy, build narrative arc
 Step 5   Write lessons (hook → content → frameworks → takeaways → sources)
@@ -103,11 +106,11 @@ Step 8   Save .md, optional PDF export, deliver summary
 
 ### Research depth levels
 
-| Level | Web searches | Sources | Articles read | Lessons | Best for |
-|-------|-------------|---------|---------------|---------|----------|
-| **Quick** | 3-4 | 8-12 | 6-8 | 6-8 | Narrow topics, time-sensitive needs |
-| **Standard** (default) | 4-6 | 15-25 | 10-15 | 8-12 | Most courses |
-| **Deep** | 6-10 | 25-40 | 15-25 | 12-18 | Reference-grade material |
+| Level | Web searches | YouTube searches | Sources | Articles read | Lessons | Best for |
+|-------|-------------|-----------------|---------|---------------|---------|----------|
+| **Quick** | 3-4 | 1 | 8-12 | 6-8 | 6-8 | Narrow topics, time-sensitive needs |
+| **Standard** (default) | 4-6 | 1-2 | 15-25 | 10-15 | 8-12 | Most courses |
+| **Deep** | 6-10 | 2-3 | 25-40 | 15-25 | 12-18 | Reference-grade material |
 
 Deep mode triggers **recursive sub-research**: after the initial pass, the agent identifies knowledge gaps per module and runs targeted searches to fill them.
 
@@ -165,6 +168,8 @@ The agents are plain `.md` files -- no build step, no dependencies. Edit them di
 - **No multimedia.** Outputs Markdown (and optionally PDF). Does not generate slides, videos, quizzes, or interactive content.
 - **Claude Code only.** These agents run inside Claude Code. They are not standalone CLI tools or web apps.
 - **Token usage.** Reading 10-25 full articles and writing a complete course consumes significant tokens. Deep mode especially.
+- **YouTube captions required.** Videos without auto-generated or manual captions are skipped. Age-restricted videos cannot be accessed.
+- **Transcript quality varies.** Auto-generated captions may contain errors. The synthesis step cross-references across sources, so a poorly transcribed video contributes less but doesn't corrupt the course.
 - **No persistent memory across courses.** Each course build is independent. The agent doesn't learn from previously built courses (though incremental mode can extend existing ones).
 
 ## Requirements
@@ -172,6 +177,7 @@ The agents are plain `.md` files -- no build step, no dependencies. Edit them di
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
 - A Claude API key with access to Sonnet or Opus
 - Optional: `pandoc` + `wkhtmltopdf` for PDF export
+- Optional: `youtube-transcript-api` for YouTube research (auto-installed on first use)
 
 ```bash
 # macOS

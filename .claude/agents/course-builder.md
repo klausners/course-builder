@@ -65,11 +65,11 @@ If the user has already provided clear answers to these in their initial message
 
 Use WebSearch to find sources based on the chosen depth level:
 
-| Depth | Searches | Sources target | Articles to read |
-|-------|----------|---------------|-----------------|
-| Quick (1) | 3-4 parallel | 8-12 | 6-8 |
-| Standard (2) | 4-6 parallel | 15-25 | 10-15 |
-| Deep (3) | 6-10 parallel | 25-40 | 15-25 |
+| Depth | Web searches | YouTube searches | Sources target | Articles to read |
+|-------|-------------|-----------------|---------------|-----------------|
+| Quick (1) | 3-4 parallel | 1 | 8-12 | 6-8 |
+| Standard (2) | 4-6 parallel | 1-2 | 15-25 | 10-15 |
+| Deep (3) | 6-10 parallel | 2-3 | 25-40 | 15-25 |
 
 Prioritize:
 
@@ -78,6 +78,7 @@ Prioritize:
 - **Specialized publications** (Lenny's Newsletter, Product Compass, Mind the Product, etc.)
 - **Recent content** (prefer last 2 years, accept older if foundational)
 - **Primary sources** over secondary commentary
+- **YouTube videos** (conference talks, practitioner tutorials, expert deep-dives)
 
 Search strategies by angle:
 - "[topic] beginner guide blog"
@@ -87,6 +88,13 @@ Search strategies by angle:
 - "[topic] [known author in the field] guide"
 - "[topic] case study real example"
 - "[topic] mistakes pitfalls lessons learned"
+
+YouTube search strategies (run alongside web searches):
+- "[topic] tutorial site:youtube.com"
+- "[topic] explained site:youtube.com" (Standard+ only)
+- "[topic] [specific subtopic] site:youtube.com" (Deep only)
+
+YouTube results count toward the total sources target -- they are not additive.
 
 **Important**: Search in the language of the topic's main community. If the topic is global (tech, product), search in English even if the course will be written in another language.
 
@@ -104,6 +112,14 @@ For each article, extract into a structured research log:
 - **Confidence markers**: Note which concepts appear across multiple sources (quorum tracking)
 
 Run WebFetch calls in parallel (4 at a time) to maximize speed. If a fetch fails (403, timeout), try alternative sources -- don't leave gaps.
+
+**YouTube transcript processing**: When a search result URL contains `youtube.com` or `youtu.be`:
+1. Extract the video ID from the URL (the `v=` parameter or the path segment after `youtu.be/`)
+2. Run: `bash ~/course-builder/scripts/youtube-transcript.sh VIDEO_ID`
+3. If the script succeeds (exit 0): process the transcript text the same way as article text -- extract concepts, frameworks, quotes, and confidence markers
+4. If the script fails (exit 1): log the failure, skip the video, and try an alternative source
+
+If the script is not found at `~/course-builder/scripts/`, fall back to running directly: `python3 -W ignore -m youtube_transcript_api VIDEO_ID --format text`. If that also fails, run `pip3 install youtube-transcript-api` and retry once.
 
 **Source diversity check**: After reading all articles, verify you have:
 - At least 3 different author perspectives (not all from the same person/company)
@@ -206,10 +222,12 @@ Create a complete attribution table:
 ```
 # COMPLETE SOURCES BY LESSON
 
-| Lesson | Author/Org | Article | Link |
-|--------|-----------|---------|------|
+| Lesson | Type | Author/Org | Article/Video | Link |
+|--------|------|-----------|---------------|------|
 ...
 ```
+
+Type column values: `Article` or `Video`.
 
 ### STEP 7.5: RESEARCH METADATA
 
@@ -225,6 +243,8 @@ Add a research transparency section at the end of the course:
 - **Concepts validated by quorum (3+ sources)**: [number]
 - **Single-source concepts**: [number]
 - **Recursive research rounds**: [0 for Quick/Standard, N for Deep]
+- **YouTube videos processed**: [number]
+- **Videos skipped (no captions)**: [number]
 ```
 
 ### STEP 7.7: INTEGRATE THE INNOVATION CHAPTER
