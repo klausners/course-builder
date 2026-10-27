@@ -1,0 +1,13 @@
+{
+  "name": "course-builder",
+  "version": "2.0.0",
+  "description": "Research-driven study courses: reads real articles and YouTube transcripts, cross-references facts by quorum, and writes structured Markdown courses with narrative arc, frameworks and per-lesson sources, plus an innovation chapter.",
+  "author": {
+    "name": "klausners",
+    "url": "https://github.com/klausners"
+  },
+  "homepage": "https://github.com/klausners/course-builder",
+  "repository": "https://github.com/klausners/course-builder",
+  "license": "MIT",
+  "keywords": ["course", "learning", "research", "education", "study-plan", "youtube"]
+}
