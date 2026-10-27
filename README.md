@@ -18,7 +18,7 @@ You: /course-builder:course product discovery for PMs
 course-builder:
   → asks up to 4 scoping questions (audience, success criteria, scope, depth)
   → searches 15-25 real articles and YouTube videos
-  → reads articles and extracts video transcripts
+  → reads every article and video transcript in full (parallel reader agents)
   → cross-references facts across sources
   → synthesizes into a 10-lesson course with narrative arc
   → extracts actionable frameworks per lesson
@@ -67,7 +67,17 @@ cp course-builder/agents/*.md ~/.claude/agents/
 mkdir -p ~/.claude/skills && cp -r course-builder/skills/course ~/.claude/skills/
 ```
 
-With a manual install the skill is `/course` instead of `/course-builder:course`, and the agent calls the YouTube library directly through `uvx` instead of the bundled script.
+With a manual install the skill is `/course` instead of `/course-builder:course`, the agents are `course-builder`, `source-reader` and `innovation-scout` (no `course-builder:` prefix), and YouTube transcripts are fetched by calling the library directly through `uvx` instead of the bundled script. Updates are manual: pull the repo and copy the files again.
+
+### Upgrading from 1.x
+
+Version 1.x was installed by copying `.claude/agents/*.md` into `~/.claude/agents/`. Before installing 2.0 as a plugin, remove the old copies so each agent exists only once:
+
+```bash
+rm ~/.claude/agents/course-builder.md ~/.claude/agents/innovation-scout.md
+```
+
+What changes for you: start courses with `/course-builder:course` (or plain language, as before), and expect the scoping questions to actually appear. See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
 ### YouTube support (optional)
 
@@ -187,14 +197,14 @@ Missing any of these triggers additional targeted searches automatically.
 
 ### Memory across courses
 
-Both agents use Claude Code's persistent [agent memory](https://code.claude.com/docs/en/sub-agents) (`memory: user`). Over time they remember:
+course-builder and innovation-scout use Claude Code's persistent [agent memory](https://code.claude.com/docs/en/sub-agents) (`memory: user`). Over time they remember:
 
 - Your language, writing style, voice profile and usual audience
 - Domains that always fail (paywalls, 403s) so they're skipped up front, and domains that produced great material
 - Courses already built (topic, path, date), which helps incremental mode
 - Opportunities the scout already proposed, so it doesn't repeat itself
 
-Memory requires auto memory to be on (it is by default).
+source-reader is stateless on purpose: it only reports what each source says. Memory requires auto memory to be on (it is by default). Memory lives in `~/.claude/agent-memory/`; delete an agent's folder there to make it forget.
 
 ## Output structure
 
@@ -226,6 +236,17 @@ The plugin is plain Markdown -- no build step. Fork it and edit:
 
 To try your changes without installing: `claude --plugin-dir ./course-builder`.
 
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| `/course-builder:course` doesn't show up | The plugin loads at session start. Run `/reload-plugins` or start a new session; check the **Errors** tab in `/plugin` |
+| Each agent appears twice | Leftover 1.x copies in `~/.claude/agents/`. See [Upgrading from 1.x](#upgrading-from-1x) |
+| Research metadata says "YouTube unavailable" | YouTube blocks the machine's IP (typical on cloud machines and VPSs), or neither `uv` nor `pipx` is installed. Run locally, or install `uv` |
+| Research metadata says the sources were "read directly" | course-builder couldn't launch source-readers, usually because nesting is turned off. Unset `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` or set it to 2 or more |
+| No PDF was generated | pandoc or Typst is missing. Install them (see [Requirements](#requirements)), then run `pandoc course.md -o course.pdf --pdf-engine=typst --toc -V papersize=a4` |
+| The agents don't remember your preferences | Auto memory is off (`autoMemoryEnabled: false` or `CLAUDE_CODE_DISABLE_AUTO_MEMORY`) |
+
 ## Limitations
 
 - **Depends on web access.** The agent needs to fetch real articles. Sites behind paywalls, login walls, or aggressive bot protection (403s) will be skipped. The agent retries with alternative sources, but some niche topics may have limited freely accessible content.
@@ -241,7 +262,7 @@ To try your changes without installing: `claude --plugin-dir ./course-builder`.
 
 ## Requirements
 
-- [Claude Code](https://code.claude.com/docs) with a Claude subscription (Pro, Max, Team, Enterprise) or an API key
+- [Claude Code](https://code.claude.com/docs) with a Claude subscription (Pro, Max, Team, Enterprise) or an API key. The one-step `/plugin install ... --marketplace` command needs v2.1.275 or later; the two-step install works on older versions
 - Optional: [uv](https://docs.astral.sh/uv/) or `pipx` for YouTube transcripts
 - Optional: `pandoc` + [Typst](https://typst.app) for PDF export
 
