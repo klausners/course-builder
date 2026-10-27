@@ -9,6 +9,7 @@ Contributions are welcome. The plugin is plain Markdown plus one shell script, s
 .claude-plugin/marketplace.json  marketplace catalog (this repo is its own marketplace)
 skills/course/SKILL.md           orchestration: scoping questions, brief, integration, PDF
 agents/course-builder.md         research + writing agent
+agents/source-reader.md          reads a batch of sources, returns structured logs
 agents/innovation-scout.md       innovation chapter agent
 scripts/youtube-transcript.sh    YouTube transcript helper (exit 0 ok / 1 skip video / 2 YouTube unavailable)
 ```

@@ -107,16 +107,32 @@ Add a module on security to my existing APIs course at ~/Documents/course-apis.m
 
 ## How it works
 
-### Lead + two agents
+### Lead + three agents
 
 ```
-[/course skill: scope + brief]  →  [course-builder]  →  [innovation-scout]  →  [skill: integrate + export + deliver]
+[/course skill: scope + brief]
+        ↓
+[course-builder] ──→ [source-reader ×N, in parallel]
+        ↓
+[innovation-scout]
+        ↓
+[skill: integrate + export + deliver]
 ```
 
 1. The **course skill** runs in your main conversation. It asks the scoping questions (subagents can't talk to you), writes a brief, and orchestrates the run
-2. **course-builder** (Opus, high effort) does the heavy lifting: web search, full article reads, synthesis, writing, framework extraction. It ends with a structured handoff
-3. **innovation-scout** (Sonnet, high effort) receives the handoff and hunts for what's MISSING: unexplored opportunities, gaps in current practice, cross-domain applications
-4. The skill integrates the innovation chapter, exports the PDF, and delivers the summary
+2. **course-builder** does the thinking: search, source selection, quorum validation, synthesis, writing, framework extraction. It ends with a structured handoff
+3. **source-reader** agents do the reading. course-builder sends them batches of 3-4 sources in parallel, and each returns a structured log per source (concepts, frameworks, figures, verbatim quotes). course-builder re-checks the claims a lesson rests on against the original
+4. **innovation-scout** receives the handoff and hunts for what's MISSING: unexplored opportunities, gaps in current practice, cross-domain applications
+5. The skill integrates the innovation chapter, exports the PDF, and delivers the summary
+
+### Model strategy
+
+| Component | Model | Effort | Why |
+|---|---|---|---|
+| course skill | your session's model | default | Orchestration only: questions, merging, pandoc |
+| course-builder | Opus | high | Synthesis and writing define the course's quality |
+| source-reader | Haiku (Sonnet in Deep mode) | medium | Reading is the bulk of the tokens; structured extraction doesn't need the top model. Deep mode pays for extra nuance |
+| innovation-scout | Opus | high | Small token volume, judgment-heavy: novelty and feasibility calls benefit most from the stronger model |
 
 Want a faster or cheaper run? Say so in your request ("use Sonnet") and the skill launches course-builder on Sonnet.
 
@@ -128,7 +144,7 @@ Step 0   Read memory and user context (voice profile, preferences)
 Step 0.5 Detect mode (standard or incremental)
 Step 1   Read the brief, record assumptions for anything missing
 Step 2   Web + YouTube search: cast a wide net (8-40 sources depending on depth)
-Step 3   Read articles + extract YouTube transcripts (not just snippets)
+Step 3   Parallel source-readers read articles + YouTube transcripts; verify key claims
 Step 3.5 Recursive sub-research per module (deep mode only)
 Step 4   Synthesize: map concepts, eliminate redundancy, build narrative arc
 Step 5   Write lessons (hook → content → frameworks → takeaways → sources)
@@ -204,6 +220,7 @@ The plugin is plain Markdown -- no build step. Fork it and edit:
 | Lesson structure template | Step 5 in `agents/course-builder.md` |
 | Research depth parameters | Step 2 in `agents/course-builder.md` |
 | Quality criteria checklist | End of `agents/course-builder.md` |
+| What gets extracted from each source | Output template in `agents/source-reader.md` |
 | Model and effort per agent | `model` / `effort` in each agent's frontmatter |
 | Innovation chapter format | Step 4 in `agents/innovation-scout.md` |
 
@@ -216,7 +233,8 @@ To try your changes without installing: `claude --plugin-dir ./course-builder`.
 - **Long generation time.** A standard course takes 5-15 minutes. Deep courses can take 20-30+ minutes. This is the cost of actually reading articles instead of prompting an LLM.
 - **No multimedia.** Outputs Markdown (and optionally PDF). Does not generate slides, videos, quizzes, or interactive content.
 - **Claude Code only.** The plugin runs inside Claude Code (terminal, desktop app, IDE extensions). It is not a standalone CLI tool or web app.
-- **Token usage.** Reading 10-25 full articles and writing a complete course consumes significant tokens. Deep mode especially, and course-builder runs on Opus by default.
+- **Token usage.** Reading 10-25 full articles and writing a complete course consumes significant tokens, Deep mode especially. Reading runs on Haiku to keep this down; synthesis and the innovation chapter run on Opus.
+- **Readers summarize.** course-builder works from the readers' structured logs, not the raw text. It re-reads the sources behind claims a lesson depends on, but nuance in sources it doesn't re-read can be lost.
 - **YouTube blocks cloud IPs.** On cloud machines, VPSs and remote sessions YouTube usually refuses transcript requests. The agent detects this on the first video, skips YouTube for the rest of the run, and notes it in the research metadata. Run locally to include videos.
 - **YouTube captions required.** Videos without auto-generated or manual captions are skipped. Age-restricted videos cannot be accessed.
 - **Transcript quality varies.** Auto-generated captions may contain errors. The synthesis step cross-references across sources, so a poorly transcribed video contributes less but doesn't corrupt the course.

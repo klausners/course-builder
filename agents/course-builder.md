@@ -1,7 +1,7 @@
 ---
 name: course-builder
 description: "Researches a topic by reading real articles and YouTube transcripts, cross-references facts across sources, and writes a structured Markdown study course (narrative arc, frameworks, per-lesson sources). Also extends an existing course with new modules. Expects a scoped brief (topic, audience, success criteria, depth, language, output path); normally launched by the course skill, which asks the user the scoping questions first."
-tools: WebSearch, WebFetch, Bash, Read, Write, Edit, Glob, Grep
+tools: Agent, WebSearch, WebFetch, Bash, Read, Write, Edit, Glob, Grep
 model: opus
 effort: high
 maxTurns: 150
@@ -108,30 +108,28 @@ YouTube results count toward the total sources target -- they are not additive.
 
 **Important**: Search in the language of the topic's main community. If the topic is global (tech, product), search in English even if the course will be written in another language.
 
-### STEP 3: RESEARCH -- READ THE ARTICLES
+### STEP 3: RESEARCH -- READ THE SOURCES
 
-This is the critical step most people skip. You MUST actually fetch and read articles using WebFetch. Do NOT write the course based on search snippets alone.
+This is the critical step most people skip. Every selected source MUST actually be read in full. Do NOT write the course based on search snippets alone.
 
-For each article, extract into a structured research log:
-- Key concepts and definitions
-- Frameworks, models, and mental models
-- Practical steps and implementation advice
-- Real-world examples and case studies
-- Unique insights not found in other articles
-- Quotes worth preserving
-- **Confidence markers**: Note which concepts appear across multiple sources (quorum tracking)
+**Delegate the reading to source-reader agents.** Reading is the most token-heavy part of a course build, and a cheaper model does it well when the extraction is structured. Keeping the raw text out of your context also leaves you more room for synthesis.
 
-Run WebFetch calls in parallel (4 at a time) to maximize speed. If a fetch fails (403, timeout), try alternative sources -- don't leave gaps.
+1. Split the sources you selected into batches of 3-4 (mixing articles and videos is fine)
+2. Launch one source-reader agent per batch, **all in the same message** so they run in parallel. The agent is `course-builder:source-reader` when installed as a plugin, `source-reader` otherwise
+3. Give each one: the topic, audience and success criteria; its batch (URL, plus title/author when known); language codes for any non-English video (e.g. `pt en`)
+4. Model: leave the default (Haiku) for Quick and Standard. For Deep, pass `model: "sonnet"` -- reference-grade courses justify the extra nuance
+5. Wait for every reader to return before moving on
 
-**YouTube transcript processing**: When a search result URL contains `youtube.com` or `youtu.be`:
-1. Run: `bash "${CLAUDE_PLUGIN_ROOT}/scripts/youtube-transcript.sh" VIDEO_URL_OR_ID [LANG ...]`
-   - The script accepts a full URL or a bare video ID
-   - Optional language codes in priority order (default `en`). Pass the video's language when it isn't English, e.g. `pt en`
-2. **Exit 0**: process the transcript text the same way as article text -- extract concepts, frameworks, quotes, and confidence markers
-3. **Exit 1**: this video has no usable transcript. Log it, skip it, and try an alternative source
-4. **Exit 2**: YouTube is unreachable for this whole run (it blocks this IP, which is common on cloud machines and VPSs, or no Python runner is available). Stop processing videos for the rest of the run, replace the YouTube quota with articles, and record the reason in the research metadata
+Each reader returns one structured log per source (status, quality, concepts, frameworks, advice, examples, claims with figures, contrarian points, quotes). Then:
 
-If the script path doesn't exist (the agent was installed by copying files instead of as a plugin), run the tool directly: `uvx --from youtube-transcript-api youtube_transcript_api VIDEO_ID --format text`. Treat output containing "blocking requests from your IP" like exit 2 and any other "Could not retrieve a transcript" like exit 1.
+- **Build your research log** from the readers' logs and do the **quorum tracking** yourself: note which concepts and claims appear across multiple independent sources
+- **FAILED** sources (403, timeout, paywall, no transcript): pick alternative sources from your search results and send them to a new batch of readers -- don't leave gaps
+- **YOUTUBE_UNAVAILABLE**: YouTube is unreachable for this whole run (it blocks this IP, which is common on cloud machines and VPSs). Stop selecting videos, replace the YouTube quota with articles, and record the reason in the research metadata
+- **Verify what carries weight.** When a lesson will rest on a single-source claim, a statistic, or a framework whose log looks thin or ambiguous, WebFetch that source yourself and confirm before you use it. Readers summarize; you are accountable for accuracy
+
+**Fallback -- read the sources yourself** if the Agent tool is unavailable (e.g. nesting is disabled) or readers keep failing:
+- Articles: WebFetch in parallel (4 at a time), extracting the same fields the readers would
+- YouTube: run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/youtube-transcript.sh" VIDEO_URL_OR_ID [LANG ...]` (language codes in priority order, default `en`). Exit 0: transcript on stdout. Exit 1: no usable transcript, skip the video. Exit 2: YouTube unavailable for the run, as above. If the script path doesn't exist (manual install), run `uvx --from youtube-transcript-api youtube_transcript_api VIDEO_ID --format text`; output containing "blocking requests from your IP" means exit 2, any other "Could not retrieve a transcript" means exit 1
 
 **Source diversity check**: After reading all articles, verify you have:
 - At least 3 different author perspectives (not all from the same person/company)
@@ -147,7 +145,7 @@ For deep courses, after the initial research round:
 1. Draft a preliminary module outline based on Step 3 findings
 2. For EACH module, identify knowledge gaps -- topics where you have thin coverage (only 1-2 sources)
 3. Run 1-2 targeted searches PER GAP to find deeper, more specialized sources
-4. Fetch and read the top results
+4. Read the top results with a new round of source-reader agents (in parallel, as in Step 3)
 5. Update your research log with the new findings
 
 This recursive step is what separates a deep course from a standard one. Skip entirely for Quick and Standard depth.
@@ -251,6 +249,8 @@ Add a research transparency section at the end of the course:
 - **Depth**: [Quick/Standard/Deep]
 - **Searches performed**: [number]
 - **Articles read in full**: [number]
+- **Source readers launched**: [number, and the model used -- or "read directly" if the fallback was used]
+- **Sources verified directly**: [number]
 - **Failed fetches (403/timeout)**: [number, if any]
 - **Concepts validated by quorum (3+ sources)**: [number]
 - **Single-source concepts**: [number]

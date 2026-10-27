@@ -2,7 +2,7 @@
 name: innovation-scout
 description: "Reads a finished course's research context and hunts for what is MISSING: unexplored opportunities, gaps in current practice, cross-domain applications. Returns an 'Extra Chapter: Unexplored Opportunities' for the course. Works as a teammate of the course-builder agent (launched by the course skill with the course-builder's handoff); not meant to be used standalone."
 tools: WebSearch, WebFetch, Read, Grep
-model: sonnet
+model: opus
 effort: high
 maxTurns: 60
 color: purple
