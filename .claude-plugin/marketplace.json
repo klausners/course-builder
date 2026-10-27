@@ -1,0 +1,15 @@
+{
+  "name": "course-builder",
+  "description": "Research-driven course builder for Claude Code",
+  "owner": {
+    "name": "klausners",
+    "url": "https://github.com/klausners"
+  },
+  "plugins": [
+    {
+      "name": "course-builder",
+      "source": "./",
+      "description": "Research-driven study courses from real articles and YouTube transcripts, with fact validation by quorum and an innovation chapter."
+    }
+  ]
+}

@@ -1,2 +1,10 @@
 .DS_Store
 *.pdf
+
+# Local secrets and environment files -- never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.claude/settings.local.json

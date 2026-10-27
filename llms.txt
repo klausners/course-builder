@@ -1,8 +1,8 @@
 # course-builder
 
-> AI agents for Claude Code that research real articles and YouTube video transcripts, cross-reference facts across multiple sources, and synthesize structured study courses with narrative arcs, actionable frameworks, and full source attribution.
+> A Claude Code plugin that researches real articles and YouTube video transcripts, cross-references facts across multiple sources, and synthesizes structured study courses with narrative arcs, actionable frameworks, and full source attribution.
 
-course-builder is a two-agent system (course-builder + innovation-scout) that runs inside Claude Code. Unlike AI course generators that prompt an LLM directly, it reads 10-25+ real articles via web fetch, validates facts by quorum (3+ sources = high confidence), and produces self-contained Markdown courses with beginner-to-advanced progression.
+course-builder is a Claude Code plugin with one skill (`/course-builder:course`) and three agents (course-builder, source-reader, innovation-scout). The skill asks the scoping questions and orchestrates the run; course-builder has parallel source-reader agents read 10-25+ real articles and transcripts, validates facts by quorum (3+ sources = high confidence), and writes a self-contained Markdown course with beginner-to-advanced progression; innovation-scout adds a chapter of unexplored opportunities.
 
 ## Key capabilities
 
@@ -12,17 +12,21 @@ course-builder is a two-agent system (course-builder + innovation-scout) that ru
 - Narrative arc from foundations to advanced
 - Actionable frameworks in every lesson
 - Per-lesson source attribution with links
+- Parallel source-reader agents (Haiku) for reading; Opus for synthesis and innovation analysis
 - Innovation scout agent that finds unexplored opportunities
 - Incremental mode to add modules to existing courses
-- PDF export via pandoc
+- Persistent agent memory for user preferences, failing domains and past courses
+- PDF export via pandoc + Typst
 - Research transparency metadata (sources read, failures, quorum stats)
 
 ## Installation
 
-Copy `.claude/agents/course-builder.md` and `.claude/agents/innovation-scout.md` to `~/.claude/agents/`.
+In Claude Code: `/plugin marketplace add klausners/course-builder`, then `/plugin install course-builder@course-builder`.
 
 ## Documentation
 
 - [README](https://github.com/klausners/course-builder/blob/main/README.md)
-- [course-builder agent](https://github.com/klausners/course-builder/blob/main/.claude/agents/course-builder.md)
-- [innovation-scout agent](https://github.com/klausners/course-builder/blob/main/.claude/agents/innovation-scout.md)
+- [course skill](https://github.com/klausners/course-builder/blob/main/skills/course/SKILL.md)
+- [course-builder agent](https://github.com/klausners/course-builder/blob/main/agents/course-builder.md)
+- [source-reader agent](https://github.com/klausners/course-builder/blob/main/agents/source-reader.md)
+- [innovation-scout agent](https://github.com/klausners/course-builder/blob/main/agents/innovation-scout.md)
